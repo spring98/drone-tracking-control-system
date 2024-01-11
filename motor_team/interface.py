@@ -18,8 +18,11 @@ class Interface:
         self.ADDR_GOAL_VELOCITY = 104
         self.ADDR_PRESENT_POSITION = 132
         self.ADDR_PRESENT_VELOCITY = 128
-
         self.ADDR_OPERATING_MODE = 11
+
+        # Profile
+        self.ADDR_PROFILE_ACCELERATION = 108
+        self.ADDR_PROFILE_VELOCITY = 112
 
         # 모터 프로퍼티 데이터
         # self.BAUD_RATE = 57600
@@ -90,13 +93,29 @@ class Interface:
 
     def readData(self):
         # Read CURRENT POSITION
-        ID1_CURRENT_POSITION, _, _ = self.PACKET_HANDLER.read4ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_PRESENT_POSITION)
+        ID1_CURRENT_POSITION, _, _ = self.PACKET_HANDLER.read4ByteTxRx(self.PORT_HANDLER, self.DXL_ID1,
+                                                                       self.ADDR_PRESENT_POSITION)
 
         # Read CURRENT VELOCITY
-        ID1_CURRENT_VELOCITY, _, _ = self.PACKET_HANDLER.read4ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_PRESENT_VELOCITY)
+        ID1_CURRENT_VELOCITY, _, _ = self.PACKET_HANDLER.read4ByteTxRx(self.PORT_HANDLER, self.DXL_ID1,
+                                                                       self.ADDR_PRESENT_VELOCITY)
 
         ID1_CURRENT_POSITION = self.utils.pos2rad(ID1_CURRENT_POSITION)
         ID1_CURRENT_VELOCITY = self.utils.rpm2radps(ID1_CURRENT_VELOCITY)
+
+        return ID1_CURRENT_POSITION, ID1_CURRENT_VELOCITY
+
+    def readPresent(self, poses, veles):
+        # Read CURRENT POSITION
+        ID1_CURRENT_POSITION, _, _ = self.PACKET_HANDLER.read4ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_PRESENT_POSITION)
+        ID1_CURRENT_POSITION = self.utils.protectOverflow(ID1_CURRENT_POSITION)
+
+        # Read CURRENT VELOCITY
+        ID1_CURRENT_VELOCITY, _, _ = self.PACKET_HANDLER.read4ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_PRESENT_VELOCITY)
+        ID1_CURRENT_VELOCITY = self.utils.rpm2pps(ID1_CURRENT_VELOCITY)
+
+        poses.append(ID1_CURRENT_POSITION)
+        veles.append(ID1_CURRENT_VELOCITY)
 
         return ID1_CURRENT_POSITION, ID1_CURRENT_VELOCITY
 
@@ -106,9 +125,9 @@ class Interface:
         self.PACKET_HANDLER.write2ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_OPERATING_MODE, 1)
         self.enableTorque()
 
-        Kp = 1  # 비례 게인
-        Ki = 0.02  # 적분 게인
-        Kd = 0.1  # 미분 게인
+        Kp = 0.5  # 비례 게인
+        Ki = 0.001  # 적분 게인
+        Kd = 0.2  # 미분 게인
 
         # PID 오차 초기화
         error_sum1 = 0
@@ -134,7 +153,7 @@ class Interface:
             goal = Kp * error1 + Ki * error_sum1 + Kd * delta_error1
             print(f'Kp: {Kp * error1:.3f}, Ki: {Ki * error_sum1:.3f}, Kd: {Kd * delta_error1:.3f}, 합: {goal:.3f}')
 
-            goal = int(goal * 0.1)
+            goal = int(goal * 0.05)
 
             # 모터 제어
             self.PACKET_HANDLER.write4ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_GOAL_VELOCITY, goal)
@@ -219,3 +238,36 @@ class Interface:
 
         return self.utils.pos2rad(dxl1_present_position), self.utils.rpm2radps(dxl1_present_velocity)
 
+    # Current Based Position 0 ~ 1,193
+    def sendCBP(self, profile_vel, profile_acc, position):
+        # 위치 제어 모드로 변경
+        self.disableTorque()
+        self.PACKET_HANDLER.write2ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_OPERATING_MODE, 5)
+        self.enableTorque()
+
+        # Plot Data
+        poses = []
+        veles = []
+
+        result, error = self.PACKET_HANDLER.write4ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_PROFILE_ACCELERATION, profile_acc)
+        self.printLog(result, error)
+
+        result, error = self.PACKET_HANDLER.write4ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_PROFILE_VELOCITY, profile_vel)
+        self.printLog(result, error)
+
+        # Write GOAL PWM
+        result, error = self.PACKET_HANDLER.write4ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_GOAL_POSITION, position)
+        self.printLog(result, error)
+
+        self.readPresent(poses, veles)
+        while True:
+            ID1_CURRENT_POSITION, ID1_CURRENT_VELOCITY = self.readPresent(poses, veles)
+            print("[ID:%03d] GOAL_POS:%03d CURR_POS:%03d" % (self.DXL_ID1, position, ID1_CURRENT_POSITION))
+
+            if abs(position - ID1_CURRENT_POSITION) < self.DXL_MOVING_STATUS_THRESHOLD:
+                self.readPresent(poses, veles)
+                return poses, veles
+                # quit()
+
+            if not self.running:
+                quit()

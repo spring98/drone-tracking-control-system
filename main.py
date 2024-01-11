@@ -7,8 +7,14 @@ import signal
 import time
 
 if __name__ == "__main__":
+    torque_control_flag = True
+    # torque_control_flag = False
+
+    end_pos = 500
+    # end_pos = 1500
+
     # motor time slice
-    time_slice, max_time = 15, 0.5 # 15Hz 로 계산::0.5초
+    time_slice, max_time = 15, 0.5  # 15Hz 로 계산::0.5초
     # time_slice, max_time = 31, 1 # 31Hz 로 계산::1초
     # time_slice, max_time = 62, 2 # 62Hz 로 계산::2초
     # time_slice, max_time = 124, 4 # 124Hz 로 계산::4초
@@ -19,7 +25,7 @@ if __name__ == "__main__":
     utils = Utils()
 
     motor = Interface(utils=utils)
-    trajectory1 = Trajectory(start_pos=0, end_pos=1000, start_velocity=0, max_time=max_time, time_slice=time_slice)
+    trajectory1 = Trajectory(start_pos=0, end_pos=end_pos, start_velocity=0, max_time=max_time, time_slice=time_slice)
     trajectory2 = Trajectory(start_pos=0, end_pos=500, start_velocity=0, max_time=max_time, time_slice=time_slice)
 
     dynamics = Dynamics()
@@ -38,28 +44,43 @@ if __name__ == "__main__":
     time.sleep(1)
 
     print('CONTROL START')
-    present_rad_list = []
-    present_radps_list = []
-    present_radps2_list = []
 
     start = time.time()
-    for i in range(time_slice):
-        rad, radps, radps2 = control.execute_dynamics(motor=motor, dynamics=dynamics,
-                                              desired_rad=desired_rad_list[i], desired_radps=desired_radps_list[i], desired_radps2=desired_radps2_list[i],
-                                              desired_pos2=desired_positions2[i], desired_vel2=desired_velocities2[i], desired_acc2=desired_accelerations2[i])
 
-        present_rad_list.append(rad)
-        present_radps_list.append(radps)
-        present_radps2_list.append(radps2)
+    if torque_control_flag:
+        present_rad_list = []
+        present_radps_list = []
+        for i in range(time_slice):
+            rad, radps = control.execute_dynamics(
+                motor=motor, dynamics=dynamics,
+                desired_rad=desired_rad_list[i], desired_radps=desired_radps_list[i], desired_radps2=desired_radps2_list[i],
+                desired_pos2=desired_positions2[i], desired_vel2=desired_velocities2[i], desired_acc2=desired_accelerations2[i]
+            )
 
-    end = time.time()
-    print(f'Elapse: {end-start} seconds')
+            present_rad_list.append(rad)
+            present_radps_list.append(radps)
 
-    motor.disableTorque()
+        print()
+        print(f'Elapse: {time.time() - start} seconds')
+        motor.disableTorque()
 
-    trajectory1.plot_reference_real(
-        poses=[utils.rad2pos(rad) for rad in present_rad_list],
-        veles=[utils.rad2pos(radps) for radps in present_radps_list]
-    )
-    # trajectory1.plot_reference_real(poses=present_rad_list, veles=present_radps_list)
+        trajectory1.plot_reference_real(
+            poses=[utils.rad2pos(rad) for rad in present_rad_list],
+            veles=[utils.rad2pos(radps) for radps in present_radps_list]
+        )
 
+    else:
+        profile_acc = 125
+        profile_vel = 500
+        # profile_acc = 250
+        # profile_vel = 1000
+
+        # 모터 제어
+        present_rad_list, present_radps_list = motor.sendCBP(position=end_pos, profile_acc=profile_acc, profile_vel=profile_vel)
+        print(present_rad_list)
+
+        print()
+        print(f'Elapse: {time.time() - start} seconds')
+        motor.disableTorque()
+
+        trajectory1.plot_reference_real(present_rad_list, present_radps_list)
