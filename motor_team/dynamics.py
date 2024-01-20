@@ -1,4 +1,5 @@
 import sympy as sp
+import time
 
 class Dynamics:
     def __init__(self):
@@ -40,6 +41,19 @@ class Dynamics:
         self.l3_value = 0.15
         self.g_value = 9.81
 
+        # 심볼릭 표현을 수치 함수로 변환
+        self.mass_torque_func = sp.lambdify(
+            (self.theta1, self.theta2, self.ddtheta1, self.ddtheta2, self.m2, self.l2, self.l3),
+            self.M * sp.Matrix([[self.ddtheta1], [self.ddtheta2]]),
+            modules='numpy'
+        )
+
+        self.coriolis_gravity_func = sp.lambdify(
+            (self.theta1, self.theta2, self.dtheta1, self.dtheta2, self.m2, self.l2, self.l3, self.g),
+            self.V + self.G,
+            modules='numpy'
+        )
+
     def calcCoriolisGravityTorque(self, th1, th2, dth1, dth2):
         equations = self.V + self.G
 
@@ -69,14 +83,8 @@ class Dynamics:
 
     # Coriolis와 중력 토크를 수치적으로 계산하는 함수
     def calcCoriolisGravityTorque_numerical(self, th1, th2, dth1, dth2):
-        # 심볼릭 표현을 수치 함수로 변환
-        coriolis_gravity_func = sp.lambdify(
-            (self.theta1, self.theta2, self.dtheta1, self.dtheta2, self.m2, self.l2, self.l3, self.g),
-            self.V + self.G,
-            modules='numpy'
-        )
         # 함수에 값을 대입하여 수치 계산
-        coriolis_gravity_torque = coriolis_gravity_func(th1, th2, dth1, dth2, self.m2_value, self.l2_value, self.l3_value, self.g_value)
+        coriolis_gravity_torque = self.coriolis_gravity_func(th1, th2, dth1, dth2, self.m2_value, self.l2_value, self.l3_value, self.g_value)
         return coriolis_gravity_torque[0][0], coriolis_gravity_torque[1][0]
 
     def calcMassTorque(self, th1, th2, ddth1, ddth2):
@@ -108,14 +116,8 @@ class Dynamics:
 
     # Mass 토크를 수치적으로 계산하는 함수
     def calcMassTorque_numerical(self, th1, th2, ddth1, ddth2):
-        # 심볼릭 표현을 수치 함수로 변환
-        mass_torque_func = sp.lambdify(
-            (self.theta1, self.theta2, self.ddtheta1, self.ddtheta2, self.m2, self.l2, self.l3),
-            self.M * sp.Matrix([[self.ddtheta1], [self.ddtheta2]]),
-            modules='numpy'
-        )
         # 함수에 값을 대입하여 수치 계산
-        mass_torque = mass_torque_func(th1, th2, ddth1, ddth2, self.m2_value, self.l2_value, self.l3_value)
+        mass_torque = self.mass_torque_func(th1, th2, ddth1, ddth2, self.m2_value, self.l2_value, self.l3_value)
         return mass_torque[0][0], mass_torque[1][0],
     #
     # def calcAcc(self):

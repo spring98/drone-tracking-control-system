@@ -10,17 +10,12 @@ if __name__ == "__main__":
     torque_control_flag = True
     # torque_control_flag = False
 
-    end_pos = 500
+    end_pos = 1000
     # end_pos = 1500
 
     # motor time slice
-    time_slice, max_time = 15, 0.5  # 15Hz 로 계산::0.5초
-    # time_slice, max_time = 31, 1 # 31Hz 로 계산::1초
-    # time_slice, max_time = 62, 2 # 62Hz 로 계산::2초
-    # time_slice, max_time = 124, 4 # 124Hz 로 계산::4초
-    # time_slice, max_time = 156, 5 # 156Hz 로 계산::5초
-    # time_slice, max_time = 625, 20 # 625Hz 로 계산::20초
-
+    time_slice, max_time = 160, 0.5  # 15Hz 로 계산::0.5초
+    
     # 필요한 객체 생성
     utils = Utils()
 
@@ -77,7 +72,6 @@ if __name__ == "__main__":
 
         # 모터 제어
         present_rad_list, present_radps_list = motor.sendCBP(position=end_pos, profile_acc=profile_acc, profile_vel=profile_vel)
-        print(present_rad_list)
 
         print()
         print(f'Elapse: {time.time() - start} seconds')

@@ -1,20 +1,21 @@
+import time
+
 class Control:
     def __init__(self, max_time, time_slice, utils):
         # 게인
-        # self.Kpp = 15  # 위치 비례
-        # self.Kpi = 0  # 위치 적분
-        # self.Kpd = 0  # 위치 미분
-        # self.Kvp = 5  # 속도 비례
-        # self.Kvi = 2  # 속도 적분
-        # self.Kvd = 0.2  # 속도 미분
+        self.Kpp = 1000  # 위치 비례
+        self.Kpi = 150  # 위치 적분
+        self.Kpd = 0.1  # 위치 미분
+        self.Kvp = 30  # 속도 비례
+        self.Kvi = 0  # 속도 적분
+        self.Kvd = 0.1  # 속도 미분
 
-        self.Kpp = 8  # 위치 비례
-        self.Kpi = 10  # 위치 적분
-        self.Kpd = 3  # 위치 미분
-
-        self.Kvp = 1.5  # 속도 비례
-        self.Kvi = 10  # 속도 적분
-        self.Kvd = 0.01  # 속도 미분
+        # self.Kpp = 8  # 위치 비례
+        # self.Kpi = 10  # 위치 적분
+        # self.Kpd = 3  # 위치 미분
+        # self.Kvp = 1.5  # 속도 비례
+        # self.Kvi = 10  # 속도 적분
+        # self.Kvd = 0.01  # 속도 미분
 
         # 현재값, 에러값
         self.present_rad = 0
