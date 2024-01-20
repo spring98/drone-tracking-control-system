@@ -2,38 +2,34 @@ import time
 
 class Control:
     def __init__(self, max_time, time_slice, utils):
-        # 게인
-        self.Kpp = 1000  # 위치 비례
-        self.Kpi = 150  # 위치 적분
-        self.Kpd = 0.1  # 위치 미분
-        self.Kvp = 30  # 속도 비례
-        self.Kvi = 0  # 속도 적분
-        self.Kvd = 0.1  # 속도 미분
+        self.Ku = 1133
+        self.Tu = 0.1425
 
-        # self.Kpp = 8  # 위치 비례
-        # self.Kpi = 10  # 위치 적분
-        # self.Kpd = 3  # 위치 미분
-        # self.Kvp = 1.5  # 속도 비례
-        # self.Kvi = 10  # 속도 적분
-        # self.Kvd = 0.01  # 속도 미분
+        # PD 게인 (906, 0, 16)
+        # self.Kp = 0.8 * self.Ku
+        # self.Ki = 0
+        # self.Kd = self.Kp * self.Tu / 8
+
+        # PID 게인 (679, 9541, 12)
+        # self.Kp = 0.6 * self.Ku
+        # self.Ki = 2 * self.Kp / self.Tu
+        # self.Kd = self.Kp * self.Tu / 8
+
+        # 게인
+        self.Kp = 906
+        self.Ki = 0
+        self.Kd = 36
 
         # 현재값, 에러값
         self.present_rad = 0
-        self.integral_rad_error = 0
-        self.derivative_rad_error = 0
-        self.last_rad_error = 0
-
         self.present_radps = 0
-        self.integral_radps_error = 0
-        self.derivative_radps_error = 0
-        self.last_radps_error = 0
+        self.integral_rad_error = 0
 
         # 토크 상수 N*m / A
         self.Kt = 1.84
 
         self.time_slice = time_slice
         self.dt = max_time/self.time_slice
-
         self.utils = utils
 
     def execute_dynamics(self, motor, dynamics, desired_rad, desired_radps, desired_radps2, desired_pos2, desired_vel2, desired_acc2):
@@ -44,23 +40,12 @@ class Control:
         # 위치 적분 오류 업데이트
         self.integral_rad_error += rad_error * self.dt
 
-        # 속도 적분 오류 업데이트
-        self.integral_radps_error += radps_error * self.dt
+        signal = self.Kp * rad_error + self.Ki * self.integral_rad_error + self.Kd * radps_error
+        print(f'P: {self.Kp * rad_error:7.3f}, '
+              f'I: {self.Ki * self.integral_rad_error:7.3f}, '
+              f'D: {self.Kd * radps_error:7.3f}', end='\t\t')
 
-        # 위치 미분 오류 업데이트
-        self.derivative_rad_error = (rad_error - self.last_rad_error) / self.dt
-
-        # 속도 미분 오류 업데이트
-        self.derivative_radps_error = (radps_error - self.last_radps_error) / self.dt
-
-        # 피드포워드 가속도 항 추가
-        rad_signal = self.Kpp * rad_error + self.Kpi * self.integral_rad_error + self.Kpd * self.derivative_rad_error
-        radps_signal = self.Kvp * radps_error + self.Kvi * self.integral_radps_error + self.Kvd * self.derivative_radps_error
-        print(f'위치 >> P: {self.Kpp * rad_error:.3f}, I: {self.Kpi * self.integral_rad_error:.3f}, D: {self.Kpd * self.derivative_rad_error:.3f}')
-        print(f'속도 >> P: {self.Kvp * radps_error:.3f}, I: {self.Kvi * self.integral_radps_error:.3f}, D: {self.Kvd * self.derivative_radps_error:.3f}')
-
-        tau_apostrophe = desired_radps2 + rad_signal + radps_signal
-        # tau_apostrophe = rad_signal + radps_signal
+        tau_apostrophe = desired_radps2 + signal
 
         # # 동역학 모델을 사용하여 토크 계산
         mass_tau1, mass_tau2 = dynamics.calcMassTorque_numerical(th1=self.present_rad, th2=0, ddth1=tau_apostrophe, ddth2=0)
@@ -75,18 +60,15 @@ class Control:
         # print(f'Radian 에러: {rad_error:.3f}', end=',\t\t')
         # print(f'Radian/s 에러: {radps_error:.3f}', end=',\t\t')
 
-        self.printSignal(control_signal=tau_apostrophe, pos_signal=rad_signal, vel_signal=radps_signal, acc_signal=desired_radps2)
+        # self.printSignal(control_signal=tau_apostrophe, pos_signal=rad_signal, vel_signal=radps_signal, acc_signal=desired_radps2)
 
-        print(f'전류량: {current1 * 1000:.3f}mA', end='\t\t')
-        print(f'전류 디지털: {self.utils.amp2digit(current1)}')
+        print(f'전류량: {current1 * 1000:7.3f}mA', end='\t\t')
+        print(f'전류 디지털 (max: 1193): {self.utils.amp2digit(current1)}')
 
         # 모터로 토크 신호 전송, 현재 상태 업데이트
         self.present_rad, self.present_radps = motor.sendCUR(current1)
 
-        # 이전 오류 업데이트
-        self.last_rad_error = rad_error
-        self.last_radps_error = radps_error
-
+        print(f'P: {self.Kp}, I: {self.Ki}, D: {self.Kd}')
         return self.present_rad, self.present_radps
 
     def printSignal(self, control_signal, pos_signal, vel_signal, acc_signal):

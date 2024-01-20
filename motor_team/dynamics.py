@@ -36,7 +36,7 @@ class Dynamics:
         self.tau = sp.Matrix([self.tau1, self.tau2])
 
         # 실제 값 정의
-        self.m2_value = 0.5
+        self.m2_value = 0.1
         self.l2_value = 0.1
         self.l3_value = 0.15
         self.g_value = 9.81

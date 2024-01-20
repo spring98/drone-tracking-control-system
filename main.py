@@ -10,12 +10,15 @@ if __name__ == "__main__":
     torque_control_flag = True
     # torque_control_flag = False
 
+    # end_pos = 500
     end_pos = 1000
-    # end_pos = 1500
 
-    # motor time slice
-    time_slice, max_time = 160, 0.5  # 15Hz 로 계산::0.5초
-    
+    times = 1
+
+    # motor time slice (175Hz::0.5s)
+    time_slice = 175 * times
+    max_time = 0.5 * times
+
     # 필요한 객체 생성
     utils = Utils()
 

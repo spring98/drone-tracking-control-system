@@ -29,7 +29,7 @@ class Trajectory:
         else:
             return 0  # 시간이 max_time을 초과하면 가속도는 0으로 가정합니다.
 
-    # # 각속도 함수 정의
+    # 각속도 함수 정의
     def angular_velocity(self, t):
         if t < self.max_time / 4:
             return ((4 * self.max_velocity - 4 * self.start_velocity) / self.max_time) * t + self.start_velocity
@@ -49,6 +49,26 @@ class Trajectory:
             angular_positions.append(theta)
 
         return np.array(angular_positions)
+
+    # # 각도 함수 정의 --> 지글러 니콜스 용
+    # def angular_position(self):
+    #     theta = 500
+    #     dt = self.max_time / self.time_division  # 시간 증분값 (적분 정밀도 조절용)
+    #     angular_positions = []  # 시간에 따른 각도 저장용 리스트
+    #
+    #     for ti in np.linspace(0, self.max_time, self.time_division):
+    #         theta += self.angular_velocity(ti) * dt
+    #         angular_positions.append(theta)
+    #
+    #     return np.array(angular_positions)
+    #
+    # # 가속도 함수 정의 --> 지글러 니콜스 용
+    # def angular_acceleration(self, t):
+    #     return 0
+    #
+    # # 각속도 함수 정의 --> 지글러 니콜스 용
+    # def angular_velocity(self, t):
+    #    return 0
 
     def plot(self):
         # 각속도 그래프 플롯
