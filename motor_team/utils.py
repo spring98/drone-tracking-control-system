@@ -45,3 +45,11 @@ class Utils:
         digit = ampere / 0.00269
 
         return int(digit)
+
+    def ksgn(self, s):
+        if s > 0:
+            return 1
+        elif s < 0:
+            return -1
+        else:
+            return 0

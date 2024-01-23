@@ -5,8 +5,8 @@ from dynamixel_sdk import *
 class Interface:
     def __init__(self, utils):
         # 환경 변수
-        # self.DEVICE_NAME = '/dev/tty.usbserial-FT66WBIV' # Linux: "/dev/ttyUSB*"
-        self.DEVICE_NAME = 'COM4'
+        self.DEVICE_NAME = '/dev/tty.usbserial-FT66WBIV' # Linux: "/dev/ttyUSB*"
+        # self.DEVICE_NAME = 'COM4'
         self.PROTOCOL_VERSION = 2.0
 
         # 모터 아이디
