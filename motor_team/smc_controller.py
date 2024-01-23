@@ -3,7 +3,7 @@ import time
 class SMCController:
     def __init__(self, motor, dynamics, max_time, time_slice, utils):
         # smc 상수
-        self.C1 = 10
+        self.C1 = 1
         self.K1 = 0.01
 
         # 현재값, 에러값
@@ -49,4 +49,4 @@ class SMCController:
         self.th_1, self.dth_1 = self.motor.sendCUR(current1)
 
         # 모터1의 각도, 각속도 피드백
-        return self.th_1, self.dth_1, e1, e2
+        return self.th_1, self.dth_1, e1, e2, s1

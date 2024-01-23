@@ -49,8 +49,9 @@ if __name__ == "__main__":
 
     e1_list = []
     e2_list = []
+    s_list = []
     for i in range(time_slice):
-        th, dth, e1, e2 = control.execute_dynamics(
+        th, dth, e1, e2, s = control.execute_dynamics(
             th_d1=desired_rad_list[i], dth_d1=desired_radps_list[i], ddth_d1=desired_radps2_list[i],
             th_d2=desired_positions2[i], dth_d2=desired_velocities2[i], ddth_d2=desired_accelerations2[i]
         )
@@ -60,6 +61,7 @@ if __name__ == "__main__":
 
         e1_list.append(e1)
         e2_list.append(e2)
+        s_list.append(s)
 
     print()
     print(f'Elapse: {time.time() - start} seconds')
@@ -71,4 +73,5 @@ if __name__ == "__main__":
         veles=[utils.rad2pos(radps) for radps in dth_list]
     )
 
+    trajectory1.plot_data(s_list, 's')
     trajectory1.phase_portrait(e1_list, e2_list)

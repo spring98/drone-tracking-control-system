@@ -127,7 +127,7 @@ class Interface:
         self.enableTorque()
 
         Kp = 0.5  # 비례 게인
-        Ki = 0.001  # 적분 게인
+        Ki = 0.005  # 적분 게인
         Kd = 0.2  # 미분 게인
 
         # PID 오차 초기화

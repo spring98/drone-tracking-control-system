@@ -58,7 +58,7 @@ class Trajectory:
 
     # 각도 함수 정의 --> 지글러 니콜스 용
     def angular_position(self):
-        theta = 500
+        theta = 1500
         dt = self.max_time / self.time_division  # 시간 증분값 (적분 정밀도 조절용)
         angular_positions = []  # 시간에 따른 각도 저장용 리스트
 
@@ -89,6 +89,16 @@ class Trajectory:
         angular_position_values = self.angular_position()
         plt.subplot(2, 1, 1)
         plt.plot(np.linspace(0, self.max_time, self.time_division), angular_position_values, label='position')
+        plt.xlabel('time')
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()
+
+    def plot_data(self, datas, label):
+        # 범용 그래프 플롯
+        plt.figure(figsize=(10, 5))
+        plt.plot(np.linspace(0, self.max_time, self.time_division), datas, label=label)
         plt.xlabel('time')
         plt.legend()
 
