@@ -46,10 +46,18 @@ class Utils:
 
         return int(digit)
 
-    def ksgn(self, s):
+    def sgn(self, s):
         if s > 0:
             return 1
         elif s < 0:
             return -1
         else:
             return 0
+
+    def sat(self, s, threshold=1):
+        if s > threshold:
+            return 1
+        elif s < -threshold:
+            return -1
+        else:
+            return s / threshold

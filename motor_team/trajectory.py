@@ -24,41 +24,29 @@ class Trajectory:
         # utils 객체 주입
         self.utils = utils
 
-    # # 가속도 함수 정의
-    # def angular_acceleration(self, t):
-    #     if t < self.max_time / 4:
-    #         return (4 * self.max_velocity - 4 * self.start_velocity) / self.max_time
-    #     elif t < 3 * self.max_time / 4:
-    #         return 0
-    #     elif t <= self.max_time:
-    #         return -4 * self.max_velocity / self.max_time
-    #     else:
-    #         return 0  # 시간이 max_time을 초과하면 가속도는 0으로 가정합니다.
-    #
-    # # 각속도 함수 정의
-    # def angular_velocity(self, t):
-    #     if t < self.max_time / 4:
-    #         return ((4 * self.max_velocity - 4 * self.start_velocity) / self.max_time) * t + self.start_velocity
-    #     elif t < 3 * self.max_time / 4:
-    #         return self.max_velocity
-    #     else:
-    #         return self.max_velocity - (4 * self.max_velocity / self.max_time) * (t - 3 * self.max_time / 4)
-    #
-    # # 각도 함수 정의 (적분을 통해)
-    # def angular_position(self):
-    #     theta = self.start_pos  # 초기 각도로 시작
-    #     dt = self.max_time / self.time_division  # 시간 증분값 (적분 정밀도 조절용)
-    #     angular_positions = []  # 시간에 따른 각도 저장용 리스트
-    #
-    #     for ti in np.linspace(0, self.max_time, self.time_division):
-    #         theta += self.angular_velocity(ti) * dt
-    #         angular_positions.append(theta)
-    #
-    #     return np.array(angular_positions)
+    # 가속도 함수 정의
+    def angular_acceleration(self, t):
+        if t < self.max_time / 4:
+            return (4 * self.max_velocity - 4 * self.start_velocity) / self.max_time
+        elif t < 3 * self.max_time / 4:
+            return 0
+        elif t <= self.max_time:
+            return -4 * self.max_velocity / self.max_time
+        else:
+            return 0  # 시간이 max_time을 초과하면 가속도는 0으로 가정합니다.
 
-    # 각도 함수 정의 --> 지글러 니콜스 용
+    # 각속도 함수 정의
+    def angular_velocity(self, t):
+        if t < self.max_time / 4:
+            return ((4 * self.max_velocity - 4 * self.start_velocity) / self.max_time) * t + self.start_velocity
+        elif t < 3 * self.max_time / 4:
+            return self.max_velocity
+        else:
+            return self.max_velocity - (4 * self.max_velocity / self.max_time) * (t - 3 * self.max_time / 4)
+
+    # 각도 함수 정의 (적분을 통해)
     def angular_position(self):
-        theta = 1500
+        theta = self.start_pos  # 초기 각도로 시작
         dt = self.max_time / self.time_division  # 시간 증분값 (적분 정밀도 조절용)
         angular_positions = []  # 시간에 따른 각도 저장용 리스트
 
@@ -68,13 +56,25 @@ class Trajectory:
 
         return np.array(angular_positions)
 
-    # 가속도 함수 정의 --> 지글러 니콜스 용
-    def angular_acceleration(self, t):
-        return 0
-
-    # 각속도 함수 정의 --> 지글러 니콜스 용
-    def angular_velocity(self, t):
-       return 0
+    # 각도 함수 정의 --> 지글러 니콜스 용
+    # def angular_position(self):
+    #     theta = 500
+    #     dt = self.max_time / self.time_division  # 시간 증분값 (적분 정밀도 조절용)
+    #     angular_positions = []  # 시간에 따른 각도 저장용 리스트
+    #
+    #     for ti in np.linspace(0, self.max_time, self.time_division):
+    #         theta += self.angular_velocity(ti) * dt
+    #         angular_positions.append(theta)
+    #
+    #     return np.array(angular_positions)
+    #
+    # # 가속도 함수 정의 --> 지글러 니콜스 용
+    # def angular_acceleration(self, t):
+    #     return 0
+    #
+    # # 각속도 함수 정의 --> 지글러 니콜스 용
+    # def angular_velocity(self, t):
+    #    return 0
 
     def plot(self):
         # 각속도 그래프 플롯
@@ -109,23 +109,23 @@ class Trajectory:
         # 각도 그래프 플롯
         angular_position_values = self.angular_position()
         plt.subplot(2, 1, 1)
-        plt.plot(np.linspace(0, self.max_time, self.time_division), angular_position_values, label='position')
-        plt.plot(np.linspace(0, self.max_time, len(poses)), poses, label='real_position')
+        plt.plot(np.linspace(0, self.max_time, self.time_division), angular_position_values, label='reference-position')
+        plt.plot(np.linspace(0, self.max_time, len(poses)), poses, label='present-position')
         plt.xlabel('time')
         plt.legend()
 
         # 각속도 그래프 플롯
         angular_velocity_values = [self.angular_velocity(t) for t in np.linspace(0, self.max_time, self.time_division)]
         plt.subplot(2, 1, 2)
-        plt.plot(np.linspace(0, self.max_time, self.time_division), angular_velocity_values, label='position/s')
-        plt.plot(np.linspace(0, self.max_time, len(veles)), veles, label='real_position/s')
+        plt.plot(np.linspace(0, self.max_time, self.time_division), angular_velocity_values, label='reference-position/s')
+        plt.plot(np.linspace(0, self.max_time, len(veles)), veles, label='present-position/s')
         plt.xlabel('time')
         plt.legend()
 
         plt.tight_layout()
         plt.show()
 
-    def phase_portrait(self, x_list, y_list):
+    def phase_portrait(self, x_list, y_list, C1):
         plt.figure(figsize=(8, 6))
 
         # 전체 데이터를 파란색으로 표시
@@ -133,7 +133,12 @@ class Trajectory:
 
         # 처음 10개 데이터만 빨간색으로 표시
         # min 함수는 리스트가 10개 미만일 경우를 고려
-        plt.plot(x_list[:min(10, len(x_list))], y_list[:min(10, len(y_list))], color='r', linestyle=':')
+        plt.plot(x_list[:min(100, len(x_list))], y_list[:min(100, len(y_list))], color='r', linestyle=':')
+
+        # x1의 값들에 대해 s = 0을 만족하는 x2(e2)의 값을 계산
+        x1_vals = np.linspace(min(x_list), max(x_list), len(x_list))
+        x2_vals = -C1 * x1_vals
+        plt.plot(x1_vals, x2_vals, 'k--', label='s = 0')  # 'k--'는 검은색 점선을 의미
 
         plt.xlabel('e1')
         plt.ylabel('e2')

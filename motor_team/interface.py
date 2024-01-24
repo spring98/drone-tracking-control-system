@@ -5,8 +5,8 @@ from dynamixel_sdk import *
 class Interface:
     def __init__(self, utils):
         # 환경 변수
-        self.DEVICE_NAME = '/dev/tty.usbserial-FT66WBIV' # Linux: "/dev/ttyUSB*"
-        # self.DEVICE_NAME = 'COM4'
+        # self.DEVICE_NAME = '/dev/tty.usbserial-FT66WBIV' # Linux: "/dev/ttyUSB*"
+        self.DEVICE_NAME = 'COM4'
         self.PROTOCOL_VERSION = 2.0
 
         # 모터 아이디
@@ -126,8 +126,8 @@ class Interface:
         self.PACKET_HANDLER.write2ByteTxRx(self.PORT_HANDLER, self.DXL_ID1, self.ADDR_OPERATING_MODE, 1)
         self.enableTorque()
 
-        Kp = 0.5  # 비례 게인
-        Ki = 0.005  # 적분 게인
+        Kp = 0.4  # 비례 게인
+        Ki = 0.0005  # 적분 게인
         Kd = 0.2  # 미분 게인
 
         # PID 오차 초기화

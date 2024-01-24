@@ -3,8 +3,10 @@ import time
 class SMCController:
     def __init__(self, motor, dynamics, max_time, time_slice, utils):
         # smc 상수
-        self.C1 = 1
-        self.K1 = 0.01
+        # self.C1 = 6
+        # self.K1 = 0.05
+        self.C1 = 1.5
+        self.K1 = 0.10
 
         # 현재값, 에러값
         self.th_1 = 0
@@ -33,7 +35,8 @@ class SMCController:
         m2AB = self.dynamics.calcM2AB_dth1_dth2_numerical(self.th_1, 0, self.dth_1, 0)
 
         # 최종 토크 신호 계산
-        tau1 = m2A_square * (self.C1 * e2 + ddth_d1) + 2 * m2AB + self.K1 * self.utils.ksgn(s1)
+        # tau1 = m2A_square * (self.C1 * e2 + ddth_d1) + 2 * m2AB + self.K1 * self.utils.sgn(s1)
+        tau1 = m2A_square * (self.C1 * e2 + ddth_d1) + 2 * m2AB + self.K1 * self.utils.sat(s1, 0.5)
         # tau2 = mass_tau2 + coriolis_tau2
 
         print(f'ddth_d1: {ddth_d1}, m2A_square: {m2A_square},m2AB: {m2AB}, s1: {s1}, tau1: {tau1}')
@@ -49,4 +52,4 @@ class SMCController:
         self.th_1, self.dth_1 = self.motor.sendCUR(current1)
 
         # 모터1의 각도, 각속도 피드백
-        return self.th_1, self.dth_1, e1, e2, s1
+        return self.th_1, self.dth_1, e1, e2, s1, self.C1

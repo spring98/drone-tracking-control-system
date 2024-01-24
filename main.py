@@ -11,7 +11,7 @@ if __name__ == "__main__":
     # end_pos = 500
     end_pos = 1000
 
-    times = 1
+    times = 10
 
     # motor time slice (175Hz::0.5s)
     time_slice = 175 * times
@@ -50,11 +50,14 @@ if __name__ == "__main__":
     e1_list = []
     e2_list = []
     s_list = []
+    global c
     for i in range(time_slice):
-        th, dth, e1, e2, s = control.execute_dynamics(
+        th, dth, e1, e2, s, c1 = control.execute_dynamics(
             th_d1=desired_rad_list[i], dth_d1=desired_radps_list[i], ddth_d1=desired_radps2_list[i],
             th_d2=desired_positions2[i], dth_d2=desired_velocities2[i], ddth_d2=desired_accelerations2[i]
         )
+
+        c = c1
 
         th_list.append(th)
         dth_list.append(dth)
@@ -73,5 +76,5 @@ if __name__ == "__main__":
         veles=[utils.rad2pos(radps) for radps in dth_list]
     )
 
-    trajectory1.plot_data(s_list, 's')
-    trajectory1.phase_portrait(e1_list, e2_list)
+    # trajectory1.plot_data(s_list, 's')
+    trajectory1.phase_portrait(e1_list, e2_list, c)
