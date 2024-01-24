@@ -9,7 +9,7 @@ class Coordinate:
         self.DEFAULT = 0
         self.L1 = 0.083
         self.L2 = 0.043
-    
+
     def camera2drone(self, param_Xp, param_Yp, param_depth, param_th1=0, param_th2=0):
         # 설정해줘야하는 초기값
         depth = param_depth

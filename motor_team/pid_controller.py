@@ -50,8 +50,8 @@ class PIDController:
         tau_apostrophe = ddth_d1 + signal
 
         # 동역학 모델을 사용하여 토크 계산
-        mass_tau1, mass_tau2 = self.dynamics.calcMassTorque_numerical(th1=self.th_1, th2=0, ddth1=tau_apostrophe, ddth2=0)
-        coriolis_tau1, coriolis_tau2 = self.dynamics.calcCoriolisGravityTorque_numerical(th1=self.th_1, th2=0, dth1=self.dth_1, dth2=0)
+        mass_tau1, mass_tau2 = self.dynamics.calcMassTorque(th1=self.th_1, th2=0, ddth1=tau_apostrophe, ddth2=0)
+        coriolis_tau1, coriolis_tau2 = self.dynamics.calcCoriolisGravityTorque(th1=self.th_1, th2=0, dth1=self.dth_1, dth2=0)
 
         # 최종 토크 신호 계산
         tau1 = mass_tau1 + coriolis_tau1

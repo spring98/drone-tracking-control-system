@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     motor = Interface(utils=utils)
     trajectory1 = Trajectory(start_pos=0, end_pos=end_pos, start_velocity=0, max_time=max_time, time_slice=time_slice, utils=utils)
-    trajectory2 = Trajectory(start_pos=0, end_pos=500, start_velocity=0, max_time=max_time, time_slice=time_slice, utils=utils)
+    trajectory2 = Trajectory(start_pos=0, end_pos=end_pos, start_velocity=0, max_time=max_time, time_slice=time_slice, utils=utils)
 
     # control = PIDController(motor=motor, dynamics=dynamics, max_time=max_time, time_slice=time_slice, utils=utils)
     control = SMCController(motor=motor, dynamics=dynamics, max_time=max_time, time_slice=time_slice, utils=utils)
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     for i in range(time_slice):
         th, dth, e1, e2, s, c1 = control.execute_dynamics(
             th_d1=desired_rad_list[i], dth_d1=desired_radps_list[i], ddth_d1=desired_radps2_list[i],
-            th_d2=desired_positions2[i], dth_d2=desired_velocities2[i], ddth_d2=desired_accelerations2[i]
+            th_d2=desired_rad_list[i], dth_d2=desired_radps_list[i], ddth_d2=desired_radps2_list[i]
         )
 
         c = c1

@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
 from motor_team.utils import Utils
-
 
 class Trajectory:
     def __init__(self, start_pos, end_pos, start_velocity, utils, max_time=0.5, time_slice=1000):
@@ -24,7 +22,7 @@ class Trajectory:
         # utils 객체 주입
         self.utils = utils
 
-    # 가속도 함수 정의
+    # # 가속도 함수 정의
     def angular_acceleration(self, t):
         if t < self.max_time / 4:
             return (4 * self.max_velocity - 4 * self.start_velocity) / self.max_time
@@ -56,14 +54,12 @@ class Trajectory:
 
         return np.array(angular_positions)
 
-    # 각도 함수 정의 --> 지글러 니콜스 용
+    # # 각도 함수 정의 --> 지글러 니콜스 용
     # def angular_position(self):
     #     theta = 500
-    #     dt = self.max_time / self.time_division  # 시간 증분값 (적분 정밀도 조절용)
     #     angular_positions = []  # 시간에 따른 각도 저장용 리스트
     #
-    #     for ti in np.linspace(0, self.max_time, self.time_division):
-    #         theta += self.angular_velocity(ti) * dt
+    #     for _ in np.linspace(0, self.max_time, self.time_division):
     #         angular_positions.append(theta)
     #
     #     return np.array(angular_positions)
